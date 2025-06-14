@@ -1,0 +1,60 @@
+# workflow to deploy to Digital Ocean
+name: Deploy to Digital Ocean
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Copy project files to droplet
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DIGITALOCEAN_HOST }}
+          username: ${{ secrets.DIGITALOCEAN_USERNAME }}
+          key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+          source: "."
+          target: "/home/franevarez/odoo"
+
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DIGITALOCEAN_HOST }}
+          username: ${{ secrets.DIGITALOCEAN_USERNAME }}
+          key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+          script: |
+            # write a .env in the deploy user’s home
+            cat <<EOF > /home/${{ secrets.DIGITALOCEAN_USERNAME }}/odoo/odoo.conf
+            [options]
+            admin_passwd = ${{ secrets.ODOO_ADMIN_PASSWORD }}
+            db_host = ${{ secrets.POSTGRES_HOST }}
+            #dbfilter = ${{ secrets.DB_NAME }}
+            db_port = ${{ secrets.POSTGRES_PORT }}
+            db_user = ${{ secrets.POSTGRES_USER }}
+            db_password = ${{ secrets.POSTGRES_PASSWORD }}
+            db_name = ${{ secrets.DB_NAME }}
+            addons_path = /mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+            db_sslmode = require
+            list_db = False
+            EOF
+
+            # go into your Docker Compose folder
+            cd /home/${{ secrets.DIGITALOCEAN_USERNAME }}/odoo
+
+            # stop any old containers
+            docker compose down
+
+            # rebuild & start in prod mode
+            docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              up -d --build
+              
+      - name: Notify deployment success
+        run: echo "Deployment to Digital Ocean successful!"

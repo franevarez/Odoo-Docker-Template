@@ -1,0 +1,17 @@
+services:
+  odoo:
+    image: odoo:18.0-20250606
+    container_name: odoo-app
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      - ./addons:/mnt/extra-addons
+    restart: unless-stopped
+    command: [
+      "odoo"
+    ]
+
+volumes:
+  odoo-data:

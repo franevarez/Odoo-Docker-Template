@@ -1,0 +1,13 @@
+# This file is used to override the default docker-compose configuration for development purposes.
+
+services:
+  odoo:
+    build: .
+    network_mode: host
+    container_name: odoo-app-dev
+    # Arranca en modo desarrollo (recarga código, vistas y assets)
+    command: [
+      "odoo",
+       "-c", "/etc/odoo/odoo.conf",
+      "--dev", "reload"
+    ]

@@ -1,0 +1,14 @@
+# This file is used to override the default docker-compose configuration for development and debug purposes.
+
+services:
+  odoo:
+    build: .
+    network_mode: host
+    container_name: odoo-app-dev
+    command: [
+      "python3", "-m", "debugpy",
+      "--listen", "0.0.0.0:5678",
+      "--wait-for-client",
+      "/usr/bin/odoo",
+      "--dev", "reload"
+    ]

@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "configurations": [
+    
+    {
+      "name": "Attach to Odoo Docker",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",  // o IP de tu servidor si es remoto
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/addons",   // carpeta local de tus addons
+          "remoteRoot": "/mnt/extra-addons"           // ruta de tus addons dentro del container
+        }
+      ]
+    }
+  ]
+}
